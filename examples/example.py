@@ -1,16 +1,18 @@
 #WARNING: Do not attempt to run here. Move to same directory as encrypt.py
 import encrypt
 
-bit=1
+plaintext=b"Hello World"
 
 #can only support bits of 0 or 1 right now
-e=encrypt.encrypt(bit)
+e=encrypt.encrypt(plaintext)
 pub, priv = e.gen_keys()
 
 pub.save()
 priv.save()
 
-ciphertext=e.encrypt_bit()
+ciphertext=e.encrypt()
+d=e.decrypt(ciphertext)
 print(ciphertext)
-d=e.decrypt_bit(ciphertext)
-assert d==bit
+print(d)
+
+assert d==plaintext

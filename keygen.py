@@ -1,10 +1,10 @@
-import secrets
+from secrets import randbelow, choice
 import numpy as np
 import json, base64, gzip
 
 q = 2**16
 n = 2**10
-m = n + 64
+err=[0,1]
 
 class pubkey(tuple):
     def __init__(self, publickey) -> None:
@@ -17,8 +17,8 @@ class pubkey(tuple):
     def save(self, filename="key.public"):
         A,b = self.key
         data={
-            "A":A.tolist(),
-            "b":b.tolist(),
+            "A":A,
+            "b":b,
         }
         data=gzip.compress(json.dumps(data).encode())
         data=base64.b64encode(data)
@@ -42,7 +42,7 @@ class privkey(tuple):
     def save(self, filename="key.private"):
         s, none=self.key
         data={
-            "s":s.tolist(),
+            "s":s,
         }
         data=gzip.compress(json.dumps(data).encode())
         data=base64.b64encode(data)
@@ -55,11 +55,13 @@ class privkey(tuple):
         return privkey((s, None))
 
 def generate():
-    A = np.matrix([[secrets.randbelow(q) for _ in range(n)] for _ in range(m)])
-    s = np.matrix([secrets.randbelow(q) for _ in range(n)]).transpose()
-    e = np.matrix([secrets.choice([0, 1]) for _ in range(m)]).transpose()
-    b = (A * s + e) % q
-    return pubkey((A, b)), privkey((s, None))
+    a = [randbelow(q) for _ in range(n)]
+    s = [randbelow(q) for _ in range(n)]
+    e = [choice(err) for _ in range(n)]
+
+    # Generate public key b
+    b = [((A * S) + E) % q for A, S, E in zip(a, s, e)]
+    return pubkey((a, b)), privkey((s, None))
 
 def gen_r():
-    return np.matrix([secrets.choice([0, 1]) for _ in range(m)]).transpose()
+    return [choice(err) for _ in range(n)]
